@@ -39,10 +39,103 @@
     ![Figure 7](images/fig7.png)
 
 
-+ Fidelity V.S. Perceptual    
-    ![Figure 8](images/fig8.png "Zhang, Kai, Shuhang Gu, and Radu Timofte. "Ntire 2020 challenge on perceptual extreme super-resolution: Methods and results." Proceedings of the IEEE/CVF conference on computer vision and pattern recognition workshops. 2020.")
-
++ Fidelity V.S. Perceptual (perception-distortion trade-off)
+    + "Zhang, Kai, Shuhang Gu, and Radu Timofte. "Ntire 2020 challenge on perceptual extreme super-resolution: Methods and results." Proceedings of the IEEE/CVF conference on computer vision and pattern recognition workshops. 2020."
     
+    ![Figure 8](images/fig8.png)
+    
+
+## Problem Statements
+최근 초해상도 연구는 두 가지 흐름으로 나뉜다: 픽셀 단위 충실도를 중시하는 **Fidelity-oriented SR**과 시각적 그럴듯함을 중시하는 **Perceptual SR**이다
+### Fidelity-oriented SR
++ 픽셀 단위에서 HR과의 차이를 최소화하는 것을 목표로 한다.
++ 일반적으로 Lpix (pixel-level Lp loss)를 사용한다.
++ 기대 오차(expected error)를 최소화하는 유일한 점으로 회귀한다.
++ 이 점은 여러 가능한 해들의 평균점이며, 이를 optimal fidelity point라고 정의한다.
+### Perceptual SR
++ 픽셀 오차 최소화보다 시각적으로 그럴듯한 이미지 생성에 중점을 둔다.
++ SRGAN 기반의 프레임워크는 일반적으로 perceptual loss + adversarial loss + Lpix를 함께 사용한다.
++ Lpix에 의존하는 한, blurring phenomenon을 피할 수 없다.
+### 기존 해결 방식의 한계
++ 기존 연구들은 블러를 줄이기 위해:
+    + Lpix의 계수를 작게 설정하거나
+    + Lpix 계산 전에 low-pass filtering을 적용한다.
++ 하지만 결과적으로 suboptimal하다.
+    + Lpix의 의미를 정확히 이해하지 못한 우회적 방법이다.
+    + 블러를 유발하는 요소와 그렇지 않은 요소를 구분하지 못했다.
+### 핵심 분석: SR 이미지를 두 요소로 분해
+SR을 두가지 요소로 분해하여 분석한다: **Perceptual Variance Factor**와 **Fidelity Bias Factor**
++ Perceptual Variance Factor : 
+    + 사실적인 텍스처와 fine details를 표현하는 분산 성분    
+    + perceptual SR에서 반드시 필요한 요소
++ Fidelity Bias Factor : 
+    + perceptual variance를 제외한 나머지 성분
+    + texture randomness가 없는 평균적 구조
++ Lpix는 fidelity bias induced error와 perceptual variance factor를 모두 최소화한다.    
+    + 문제는! 여기서 블러가 발생한다!
+    + when the perceptual variance factor is minimized, the prediction space degenerates and the SR image converges to the blurry average image.
+    + 즉, Lpix의 문제는 “Fidelity Bias를 줄이는 것”이 아니라 “Perceptual Variance까지 같이 제거하는 것”이다.    
+### 핵심 목표: 
++ perceptual variance는 유지하고, fidelity bias induced error만 줄이는 것
+![Figure 9](images/fig9.png)
+
+
+## Lpix는 무엇을 최소화하는가
+Lpix는 두가지 항을 동시에 최소화한다 : SE (Systematic Effect)와 VE (Variance Effect)
+### VE : perceptual variance factor
++ Perceptual SR에서는:
+    + fine-grained textures는 본질적으로 랜덤성을 가진다.
+    + 이러한 성분은 regression으로 학습될 수 없다.
+    + 따라서 VE는 필수적이고 불가피한 오차 항이다.
++ VE를 최소화한다는 것은:
+    + 픽셀 오차를 더 줄이는 대신
+    + **시각적으로 중요한 fine texture를 제거하는 것**이다.
+### SE : fidelity bias induced error
++ SE는 랜덤성이 없는 오차이다.
++ SR과 HR 분포 중심점 사이의 거리 (두 분포 centroid 간의 정렬 정도)
++ fidelity biases
++ 중요한 점:
+    + fidelity bias는 단순한 저주파 성분이 아니다.
+    + 일부 고주파 성분(예: 경계, 에지)은 회귀로 학습 가능하다.
+    + 이런 regressable HF도 fidelity bias에 포함된다.
+![Figure 10](images/fig10.png)
+
+
+## Proposed Methods
+![Figure 11](images/fig11.png)
+
+### 간단 요약
++ Lpix로 pretrained Auto-Encoder(AE)를 학습한다.
+    + raw pixel 공간 대신 AE space에서 Lp를 계산한다.
++ AE 공간에서의 손실은
+    + perceptual variance는 줄이지 않으면서, 
+    + 결과적으로 fidelity bias만 penalize하게 된다.
+
+### 핵심 전략
++ 목표: VE는 유지, SE만 줄이기!
+    + 그런데 SE를 직접 계산할수 있나? 분포의 중심끼리 비교를 해야하는데?
++ 그래서 논문은 함수를 하나 정의한다.
+    + ψ(·) := arg minµ E[L(·, µ)]
+    + 이미지의 fidelity bias를 추정하는 함수
+    + 그리고 이게 AE이다!
+### Auto-Encoder(AE) 역할 : fidelity bias를 추정하는 함수
++ 핵심 설계 철학: AE bottleneck = fidelity bias를 추정하는 differentiable approximation
+![Figure 12](images/fig12.png)
+### AESOP Loss로 SR 모델 Training
+![Figure 13](images/fig13.png)
+![Figure 14](images/fig14.png)
+
+
+## Exepriments
+### Quantitative
+![Figure 15](images/fig15.png)
+### Qualitative
+![Figure 16](images/fig16.png)
+
+
+
+
+
 
 
 
