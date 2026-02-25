@@ -8,7 +8,7 @@
 
 ***
 
-## Super-Resolution (SR)
+## Preliminaries in Super-Resolution (SR)
 + 정의: 저해상도(Low-Resolution) 이미지를 입력으로 받아 고해상도(High-Resolution) 이미지를 복원하거나 생성하는 영상 복원 및 생성 기술
     + Interpolation-based methods : Neares-neighbor, Bilinear, Bicubic, Lanczos Resampling ...
     + Deep learning(DL)-based methods : since 2015 (Image Super-Resolution Using Deep Convolutional Networks)
@@ -20,7 +20,38 @@
     
     ![Figure 1](images/fig1.png)
     
-    + 
+    + [Johnson, Justin, Alexandre Alahi, and Li Fei-Fei. "Perceptual losses for real-time style transfer and super-resolution." European conference on computer vision. Cham: Springer International Publishing, 2016.](https://arxiv.org/abs/1603.08155)
+
+    ![Figure 2](images/fig2.png)
+
+    ![Figure 3](images/fig3.png)
+
+    + [Ledig, Christian, et al. "Photo-realistic single image super-resolution using a generative adversarial network." Proceedings of the IEEE conference on computer vision and pattern recognition. 2017.](https://arxiv.org/abs/1609.04802)
+
+    ![Figure 4](images/fig4.png)
+
+    ![Figure 5](images/fig5.png)
+
+    + [Zhang, Richard, et al. "The unreasonable effectiveness of deep features as a perceptual metric." Proceedings of the IEEE conference on computer vision and pattern recognition. 2018.](https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_The_Unreasonable_Effectiveness_CVPR_2018_paper.html)
+
+    ![Figure 6](images/fig6.png)
+
+    ![Figure 7](images/fig7.png)
+
+
++ Fidelity V.S. Perceptual    
+    ![Figure 8](images/fig8.png "Zhang, Kai, Shuhang Gu, and Radu Timofte. "Ntire 2020 challenge on perceptual extreme super-resolution: Methods and results." Proceedings of the IEEE/CVF conference on computer vision and pattern recognition workshops. 2020.")
+
+    
+
+
+
+
+
+
+
+
+
 
 ***
 <!-- 
